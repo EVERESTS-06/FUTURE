@@ -1,0 +1,93 @@
+#!/sbin/openrc-run
+
+# backward compatibility for existing gentoo layout 
+#
+if [ -d "/var/lib/future/.future" ]; then
+	futureD_DEFAULT_DATADIR="/var/lib/future/.future"
+else
+	futureD_DEFAULT_DATADIR="/var/lib/futured"
+fi
+
+futureD_CONFIGFILE=${futureD_CONFIGFILE:-/etc/future/future.conf}
+futureD_PIDDIR=${futureD_PIDDIR:-/var/run/futured}
+futureD_PIDFILE=${futureD_PIDFILE:-${futureD_PIDDIR}/futured.pid}
+futureD_DATADIR=${futureD_DATADIR:-${futureD_DEFAULT_DATADIR}}
+futureD_USER=${futureD_USER:-${future_USER:-future}}
+futureD_GROUP=${futureD_GROUP:-future}
+futureD_BIN=${futureD_BIN:-/usr/bin/futured}
+futureD_NICE=${futureD_NICE:-${NICELEVEL:-0}}
+futureD_OPTS="${futureD_OPTS:-${future_OPTS}}"
+
+name="future Core Daemon"
+description="future cryptocurrency P2P network daemon"
+
+command="/usr/bin/futured"
+command_args="-pid=\"${futureD_PIDFILE}\" \
+		-conf=\"${futureD_CONFIGFILE}\" \
+		-datadir=\"${futureD_DATADIR}\" \
+		-daemon \
+		${futureD_OPTS}"
+
+required_files="${futureD_CONFIGFILE}"
+start_stop_daemon_args="-u ${futureD_USER} \
+			-N ${futureD_NICE} -w 2000"
+pidfile="${futureD_PIDFILE}"
+
+# The retry schedule to use when stopping the daemon. Could be either
+# a timeout in seconds or multiple signal/timeout pairs (like
+# "SIGKILL/180 SIGTERM/300")
+retry="${futureD_SIGTERM_TIMEOUT}"
+
+depend() {
+	need localmount net
+}
+
+# verify
+# 1) that the datadir exists and is writable (or create it)
+# 2) that a directory for the pid exists and is writable
+# 3) ownership and permissions on the config file
+start_pre() {
+	checkpath \
+	-d \
+	--mode 0750 \
+	--owner "${futureD_USER}:${futureD_GROUP}" \
+	"${futureD_DATADIR}"
+
+	checkpath \
+	-d \
+	--mode 0755 \
+	--owner "${futureD_USER}:${futureD_GROUP}" \
+	"${futureD_PIDDIR}"
+
+	checkpath -f \
+	-o "${futureD_USER}:${futureD_GROUP}" \
+	-m 0660 \
+	"${futureD_CONFIGFILE}"
+
+	checkconfig || return 1
+}
+
+checkconfig()
+{
+	if grep -qs '^rpcuser=' "${futureD_CONFIGFILE}" && \
+		! grep -qs '^rpcpassword=' "${futureD_CONFIGFILE}" ; then
+		eerror ""
+		eerror "ERROR: You must set a secure rpcpassword to run futured."
+		eerror "The setting must appear in ${futureD_CONFIGFILE}"
+		eerror ""
+		eerror "This password is security critical to securing wallets "
+		eerror "and must not be the same as the rpcuser setting."
+		eerror "You can generate a suitable random password using the following "
+		eerror "command from the shell:"
+		eerror ""
+		eerror "bash -c 'tr -dc a-zA-Z0-9 < /dev/urandom | head -c32 && echo'"
+		eerror ""
+		eerror "It is recommended that you also set alertnotify so you are "
+		eerror "notified of problems:"
+		eerror ""
+		eerror "ie: alertnotify=echo %%s | mail -s \"future Alert\"" \
+			"admin@foo.com"
+		eerror ""
+		return 1
+	fi
+}

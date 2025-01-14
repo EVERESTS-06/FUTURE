@@ -1,4 +1,4 @@
-# Copyright (c) 2023-present The Bitcoin Core developers
+# Copyright (c) 2023-present The future Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://opensource.org/license/mit/.
 
@@ -42,28 +42,28 @@ set(CMAKE_AUTOUIC_SEARCH_PATHS forms)
 
 # TODO: The file(GLOB ...) command should be replaced with an explicit
 # file list. Such a change must be synced with the corresponding change
-# to https://github.com/bitcoin-core/bitcoin-maintainer-tools/blob/main/update-translations.py
+# to https://github.com/future-core/future-maintainer-tools/blob/main/update-translations.py
 file(GLOB ts_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} locale/*.ts)
 set_source_files_properties(${ts_files} PROPERTIES OUTPUT_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/locale)
 qt5_add_translation(qm_files ${ts_files})
 
-configure_file(bitcoin_locale.qrc bitcoin_locale.qrc USE_SOURCE_PERMISSIONS COPYONLY)
+configure_file(future_locale.qrc future_locale.qrc USE_SOURCE_PERMISSIONS COPYONLY)
 
-# The bitcoinqt sources have to include headers in
+# The futureqt sources have to include headers in
 # order to parse them to collect translatable strings.
-add_library(bitcoinqt STATIC EXCLUDE_FROM_ALL
+add_library(futureqt STATIC EXCLUDE_FROM_ALL
   bantablemodel.cpp
   bantablemodel.h
-  bitcoin.cpp
-  bitcoin.h
-  bitcoinaddressvalidator.cpp
-  bitcoinaddressvalidator.h
-  bitcoinamountfield.cpp
-  bitcoinamountfield.h
-  bitcoingui.cpp
-  bitcoingui.h
-  bitcoinunits.cpp
-  bitcoinunits.h
+  future.cpp
+  future.h
+  futureaddressvalidator.cpp
+  futureaddressvalidator.h
+  futureamountfield.cpp
+  futureamountfield.h
+  futuregui.cpp
+  futuregui.h
+  futureunits.cpp
+  futureunits.h
   clientmodel.cpp
   clientmodel.h
   csvmodelwriter.cpp
@@ -110,15 +110,15 @@ add_library(bitcoinqt STATIC EXCLUDE_FROM_ALL
   utilitydialog.h
   $<$<PLATFORM_ID:Windows>:winshutdownmonitor.cpp>
   $<$<PLATFORM_ID:Windows>:winshutdownmonitor.h>
-  bitcoin.qrc
-  ${CMAKE_CURRENT_BINARY_DIR}/bitcoin_locale.qrc
+  future.qrc
+  ${CMAKE_CURRENT_BINARY_DIR}/future_locale.qrc
 )
-target_compile_definitions(bitcoinqt
+target_compile_definitions(futureqt
   PUBLIC
     QT_NO_KEYWORDS
     QT_USE_QSTRINGBUILDER
 )
-target_include_directories(bitcoinqt
+target_include_directories(futureqt
   PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
 )
@@ -126,12 +126,12 @@ set_property(SOURCE macnotificationhandler.mm
   # Ignore warnings "'NSUserNotificationCenter' is deprecated: first deprecated in macOS 11.0".
   APPEND PROPERTY COMPILE_OPTIONS -Wno-deprecated-declarations
 )
-target_link_libraries(bitcoinqt
+target_link_libraries(futureqt
   PUBLIC
     Qt5::Widgets
   PRIVATE
     core_interface
-    bitcoin_cli
+    future_cli
     leveldb
     Boost::headers
     $<TARGET_NAME_IF_EXISTS:QRencode::QRencode>
@@ -140,7 +140,7 @@ target_link_libraries(bitcoinqt
 )
 
 if(ENABLE_WALLET)
-  target_sources(bitcoinqt
+  target_sources(futureqt
     PRIVATE
       addressbookpage.cpp
       addressbookpage.h
@@ -203,59 +203,59 @@ if(ENABLE_WALLET)
       walletview.cpp
       walletview.h
   )
-  target_link_libraries(bitcoinqt
+  target_link_libraries(futureqt
     PRIVATE
-      bitcoin_wallet
+      future_wallet
       Qt5::Network
   )
 endif()
 
 if(WITH_DBUS)
-  target_link_libraries(bitcoinqt PRIVATE Qt5::DBus)
+  target_link_libraries(futureqt PRIVATE Qt5::DBus)
 endif()
 
 if(qt_lib_type STREQUAL "STATIC_LIBRARY")
   # We want to define static plugins to link ourselves, thus preventing
   # automatic linking against a "sane" set of default static plugins.
-  qt5_import_plugins(bitcoinqt
+  qt5_import_plugins(futureqt
       EXCLUDE_BY_TYPE bearer iconengines imageformats platforms styles
   )
 endif()
 
-add_executable(bitcoin-qt
+add_executable(future-qt
   main.cpp
-  ../init/bitcoin-qt.cpp
+  ../init/future-qt.cpp
 )
 
-add_windows_resources(bitcoin-qt res/bitcoin-qt-res.rc)
+add_windows_resources(future-qt res/future-qt-res.rc)
 
-target_link_libraries(bitcoin-qt
+target_link_libraries(future-qt
   core_interface
-  bitcoinqt
-  bitcoin_node
+  futureqt
+  future_node
 )
 
-import_plugins(bitcoin-qt)
-set(installable_targets bitcoin-qt)
+import_plugins(future-qt)
+set(installable_targets future-qt)
 if(WIN32)
-  set_target_properties(bitcoin-qt PROPERTIES WIN32_EXECUTABLE TRUE)
+  set_target_properties(future-qt PROPERTIES WIN32_EXECUTABLE TRUE)
 endif()
 
 if(WITH_MULTIPROCESS)
-  add_executable(bitcoin-gui
+  add_executable(future-gui
     main.cpp
-    ../init/bitcoin-gui.cpp
+    ../init/future-gui.cpp
   )
-  target_link_libraries(bitcoin-gui
+  target_link_libraries(future-gui
     core_interface
-    bitcoinqt
-    bitcoin_node
-    bitcoin_ipc
+    futureqt
+    future_node
+    future_ipc
   )
-  import_plugins(bitcoin-gui)
-  list(APPEND installable_targets bitcoin-gui)
+  import_plugins(future-gui)
+  list(APPEND installable_targets future-gui)
   if(WIN32)
-    set_target_properties(bitcoin-gui PROPERTIES WIN32_EXECUTABLE TRUE)
+    set_target_properties(future-gui PROPERTIES WIN32_EXECUTABLE TRUE)
   endif()
 endif()
 
@@ -320,10 +320,10 @@ else()
   file(GLOB ui_files ${CMAKE_CURRENT_SOURCE_DIR}/forms/*.ui)
   add_custom_target(translate
     COMMAND ${CMAKE_COMMAND} -E env XGETTEXT=${XGETTEXT_EXECUTABLE} COPYRIGHT_HOLDERS=${COPYRIGHT_HOLDERS} ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/share/qt/extract_strings_qt.py ${translatable_sources}
-    COMMAND Qt5::lupdate -no-obsolete -I ${PROJECT_SOURCE_DIR}/src -locations relative ${CMAKE_CURRENT_SOURCE_DIR}/bitcoinstrings.cpp ${ui_files} ${qt_translatable_sources} -ts ${CMAKE_CURRENT_SOURCE_DIR}/locale/bitcoin_en.ts
-    COMMAND Qt5::lconvert -drop-translations -o ${CMAKE_CURRENT_SOURCE_DIR}/locale/bitcoin_en.xlf -i ${CMAKE_CURRENT_SOURCE_DIR}/locale/bitcoin_en.ts
-    COMMAND ${SED_EXECUTABLE} -i.old -e "s|source-language=\"en\" target-language=\"en\"|source-language=\"en\"|" -e "/<target xml:space=\"preserve\"><\\/target>/d" ${CMAKE_CURRENT_SOURCE_DIR}/locale/bitcoin_en.xlf
-    COMMAND ${CMAKE_COMMAND} -E rm ${CMAKE_CURRENT_SOURCE_DIR}/locale/bitcoin_en.xlf.old
+    COMMAND Qt5::lupdate -no-obsolete -I ${PROJECT_SOURCE_DIR}/src -locations relative ${CMAKE_CURRENT_SOURCE_DIR}/futurestrings.cpp ${ui_files} ${qt_translatable_sources} -ts ${CMAKE_CURRENT_SOURCE_DIR}/locale/future_en.ts
+    COMMAND Qt5::lconvert -drop-translations -o ${CMAKE_CURRENT_SOURCE_DIR}/locale/future_en.xlf -i ${CMAKE_CURRENT_SOURCE_DIR}/locale/future_en.ts
+    COMMAND ${SED_EXECUTABLE} -i.old -e "s|source-language=\"en\" target-language=\"en\"|source-language=\"en\"|" -e "/<target xml:space=\"preserve\"><\\/target>/d" ${CMAKE_CURRENT_SOURCE_DIR}/locale/future_en.xlf
+    COMMAND ${CMAKE_COMMAND} -E rm ${CMAKE_CURRENT_SOURCE_DIR}/locale/future_en.xlf.old
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/src
     VERBATIM
   )

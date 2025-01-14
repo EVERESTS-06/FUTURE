@@ -1,0 +1,33 @@
+# /etc/conf.d/futured: config file for /etc/init.d/futured
+
+# Config file location
+#futureD_CONFIGFILE="/etc/future/future.conf"
+
+# What directory to write pidfile to?  (created and owned by $futureD_USER)
+#futureD_PIDDIR="/var/run/futured"
+
+# What filename to give the pidfile
+#futureD_PIDFILE="${futureD_PIDDIR}/futured.pid"
+
+# Where to write futured data (be mindful that the blockchain is large)
+#futureD_DATADIR="/var/lib/futured"
+
+# User and group to own futured process
+#futureD_USER="future"
+#futureD_GROUP="future"
+
+# Path to futured executable
+#futureD_BIN="/usr/bin/futured"
+
+# Nice value to run futured under
+#futureD_NICE=0
+
+# Additional options (avoid -conf and -datadir, use flags above)
+#futureD_OPTS=""
+
+# The timeout in seconds OpenRC will wait for futured to terminate
+# after a SIGTERM has been raised.
+# Note that this will be mapped as argument to start-stop-daemon's
+# '--retry' option, which means you can specify a retry schedule
+# here. For more information see man 8 start-stop-daemon.
+futureD_SIGTERM_TIMEOUT=600

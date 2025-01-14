@@ -1,9 +1,9 @@
-// Copyright (c) 2019-present The Bitcoin Core developers
+// Copyright (c) 2019-present The future Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_SCRIPT_MINISCRIPT_H
-#define BITCOIN_SCRIPT_MINISCRIPT_H
+#ifndef future_SCRIPT_MINISCRIPT_H
+#define future_SCRIPT_MINISCRIPT_H
 
 #include <algorithm>
 #include <compare>
@@ -2223,7 +2223,7 @@ enum class DecodeContext {
     ENDIF_ELSE,
 };
 
-//! Parse a miniscript from a bitcoin script
+//! Parse a miniscript from a future script
 template<typename Key, typename Ctx, typename I>
 inline NodeRef<Key> DecodeScript(I& in, I last, const Ctx& ctx)
 {
@@ -2634,4 +2634,4 @@ inline NodeRef<typename Ctx::Key> FromScript(const CScript& script, const Ctx& c
 
 } // namespace miniscript
 
-#endif // BITCOIN_SCRIPT_MINISCRIPT_H
+#endif // future_SCRIPT_MINISCRIPT_H
